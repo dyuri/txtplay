@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
-	"github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -19,27 +18,27 @@ type model struct {
 	running       bool
 }
 
-func (m model) Init() bubbletea.Cmd {
+func (m model) Init() tea.Cmd {
 	return tick()
 }
 
-func (m model) Update(msg bubbletea.Msg) (bubbletea.Model, bubbletea.Cmd) {
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case bubbletea.KeyMsg:
+	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
-			return m, bubbletea.Quit
+			return m, tea.Quit
 		case "p":
 			m.running = !m.running
 		}
 	case tickMsg:
 		if m.running {
 			m.current_frame++
-			files, _ := ioutil.ReadDir(m.folder)
+			files, _ := os.ReadDir(m.folder)
 			if m.current_frame >= len(files) {
 				m.current_frame = 0
 			}
-			content, _ := ioutil.ReadFile(fmt.Sprintf("%s/%d.txt", m.folder, m.current_frame))
+			content, _ := os.ReadFile(fmt.Sprintf("%s/%d.txt", m.folder, m.current_frame))
 			m.content = string(content)
 		}
 		return m, tick()
@@ -53,8 +52,8 @@ func (m model) View() string {
 
 type tickMsg struct{}
 
-func tick() bubbletea.Cmd {
-	return func() bubbletea.Msg {
+func tick() tea.Cmd {
+	return func() tea.Msg {
 		time.Sleep(20 * time.Millisecond)
 		return tickMsg{}
 	}
